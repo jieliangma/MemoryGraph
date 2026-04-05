@@ -1,0 +1,39 @@
+platform :ios, '13.0'
+
+target 'MemoryGraphExample' do
+  pod 'MemoryGraph', :path => '../'
+
+  target 'MemoryGraphExampleTests' do
+    inherit! :search_paths
+  end
+end
+
+# Fix internal symbol visibility for unit tests:
+# 1) Strip -fvisibility=hidden from per-file COMPILER_FLAGS in the
+#    Pods project (podspec compiler_flags → per-file PBXBuildFile).
+# 2) Add -all_load to the app xcconfig so the linker keeps ALL
+#    symbols from the static library (not just ObjC ones). The test
+#    bundle resolves them via BUNDLE_LOADER.
+post_install do |installer|
+  # (1) Remove -fvisibility=hidden from per-file compiler flags.
+  installer.pods_project.targets.each do |target|
+    target.source_build_phase.files.each do |file|
+      settings = file.settings
+      next unless settings && settings['COMPILER_FLAGS']
+      settings['COMPILER_FLAGS'] = settings['COMPILER_FLAGS']
+        .gsub('-fvisibility=hidden', '').strip
+    end
+  end
+  installer.pods_project.save
+
+  # (2) Add -all_load to the app target's xcconfig.
+  app_xcconfig_dir = File.join(installer.sandbox.root.to_s,
+                               'Target Support Files', 'Pods-MemoryGraphExample')
+  Dir.glob(File.join(app_xcconfig_dir, '*.xcconfig')).each do |path|
+    content = File.read(path)
+    unless content.include?('-all_load')
+      content.gsub!('OTHER_LDFLAGS = ', 'OTHER_LDFLAGS = -all_load ')
+      File.write(path, content)
+    end
+  end
+end

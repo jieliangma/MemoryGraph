@@ -1,0 +1,27 @@
+# Build
+build/
+*.o
+*.a
+*.dSYM/
+
+# Xcode
+*.xcworkspace
+xcuserdata/
+DerivedData/
+*.xcscmblueprint
+
+# CocoaPods
+Pods/
+Podfile.lock
+*.xcworkspace
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# markdown
+task.md
+CLAUDE.md
